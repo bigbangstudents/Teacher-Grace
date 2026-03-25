@@ -63,6 +63,10 @@
       flex-wrap: wrap;
     }
 
+    #powerText {
+      color: #ff7a00;
+    }
+
     .cloud {
       position: absolute;
       background: white;
@@ -126,8 +130,12 @@
       left: 170px;
       width: 78px;
       height: 78px;
-      transition: transform 0.05s linear;
+      transition: transform 0.05s linear, filter 0.2s ease;
       z-index: 3;
+    }
+
+    #bunny.powered {
+      filter: drop-shadow(0 0 10px gold) brightness(1.15);
     }
 
     .ear {
@@ -361,6 +369,7 @@
       <div id="scoreText">Score: 0</div>
       <div id="livesText">Lives: 3</div>
       <div id="timeText">Time: 30</div>
+      <div id="powerText">Power: 0/5</div>
     </div>
 
     <div class="cloud cloud1"></div>
@@ -384,7 +393,7 @@
     </div>
   </div>
 
-  <div id="hint">Catch carrots, avoid rocks, and try to get the highest score!</div>
+  <div id="hint">Catch carrots in a row to charge Power Mode. At 5 in a row, your bunny gets a speed boost!</div>
 
   <div id="touchControls">
     <button class="touchBtn" id="leftBtn">⬅ Left</button>
@@ -399,12 +408,15 @@
     const scoreText = document.getElementById("scoreText");
     const livesText = document.getElementById("livesText");
     const timeText = document.getElementById("timeText");
+    const powerText = document.getElementById("powerText");
     const gameOverScreen = document.getElementById("gameOverScreen");
     const finalScore = document.getElementById("finalScore");
     const restartBtn = document.getElementById("restartBtn");
 
     let bunnyX = 170;
-    const bunnySpeed = 18;
+    const normalBunnySpeed = 18;
+    const powerBunnySpeed = 30;
+    let currentBunnySpeed = normalBunnySpeed;
     const fallSpeed = 2;
     let fallingItems = [];
     let carrotSpawnTimer = 0;
@@ -413,6 +425,10 @@
     let lives = 3;
     let timeLeft = 30;
     let gameRunning = true;
+
+    let carrotStreak = 0;
+    let powerMode = false;
+    let powerModeTimeout = null;
 
     function clampBunny() {
       const maxX = game.clientWidth - bunny.offsetWidth;
@@ -423,14 +439,14 @@
 
     function moveLeft() {
       if (!gameRunning) return;
-      bunnyX -= bunnySpeed;
+      bunnyX -= currentBunnySpeed;
       bunny.style.transform = "scaleX(-1)";
       clampBunny();
     }
 
     function moveRight() {
       if (!gameRunning) return;
-      bunnyX += bunnySpeed;
+      bunnyX += currentBunnySpeed;
       bunny.style.transform = "scaleX(1)";
       clampBunny();
     }
@@ -446,6 +462,7 @@
       const start = (e) => {
         e.preventDefault();
         moveFn();
+        clearInterval(interval);
         interval = setInterval(moveFn, 80);
       };
 
@@ -461,6 +478,30 @@
 
     holdButton(leftBtn, moveLeft);
     holdButton(rightBtn, moveRight);
+
+    function updatePowerText() {
+      if (powerMode) {
+        powerText.textContent = "POWER MODE!";
+      } else {
+        powerText.textContent = "Power: " + carrotStreak + "/5";
+      }
+    }
+
+    function startPowerMode() {
+      powerMode = true;
+      currentBunnySpeed = powerBunnySpeed;
+      bunny.classList.add("powered");
+      updatePowerText();
+
+      clearTimeout(powerModeTimeout);
+      powerModeTimeout = setTimeout(() => {
+        powerMode = false;
+        currentBunnySpeed = normalBunnySpeed;
+        bunny.classList.remove("powered");
+        carrotStreak = 0;
+        updatePowerText();
+      }, 5000);
+    }
 
     function createCarrot() {
       const carrot = document.createElement("div");
@@ -499,6 +540,7 @@
       gameRunning = false;
       finalScore.textContent = "Final Score: " + score;
       gameOverScreen.style.display = "flex";
+      clearTimeout(powerModeTimeout);
     }
 
     function clearFallingItems() {
@@ -531,10 +573,26 @@
         if (isColliding(itemBox, bunnyBox)) {
           if (item.type === "good") {
             score++;
+            carrotStreak++;
             scoreText.textContent = "Score: " + score;
+
+            if (!powerMode && carrotStreak >= 5) {
+              startPowerMode();
+            } else if (!powerMode) {
+              updatePowerText();
+            }
           } else if (item.type === "bad") {
             lives--;
+            carrotStreak = 0;
+            if (powerMode) {
+              powerMode = false;
+              currentBunnySpeed = normalBunnySpeed;
+              bunny.classList.remove("powered");
+              clearTimeout(powerModeTimeout);
+            }
             livesText.textContent = "Lives: " + lives;
+            updatePowerText();
+
             if (lives <= 0) {
               item.el.remove();
               fallingItems.splice(i, 1);
@@ -543,6 +601,7 @@
               return;
             }
           }
+
           item.el.remove();
           fallingItems.splice(i, 1);
           continue;
@@ -596,10 +655,17 @@
       carrotSpawnTimer = 0;
       rockSpawnTimer = 0;
       gameRunning = true;
+      carrotStreak = 0;
+      powerMode = false;
+      currentBunnySpeed = normalBunnySpeed;
+
+      clearTimeout(powerModeTimeout);
+      bunny.classList.remove("powered");
 
       scoreText.textContent = "Score: 0";
       livesText.textContent = "Lives: 3";
       timeText.textContent = "Time: 30";
+      updatePowerText();
       gameOverScreen.style.display = "none";
 
       clearFallingItems();
@@ -608,6 +674,7 @@
 
     window.addEventListener("resize", clampBunny);
     clampBunny();
+    updatePowerText();
     gameLoop();
   </script>
 </body>
