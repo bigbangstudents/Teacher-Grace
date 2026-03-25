@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sigma Gamer</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #87ceeb, #dff6ff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 12px;
+      overflow: hidden;
+    }
+
+    h1 {
+      color: #ff4fa3;
+      margin-bottom: 10px;
+      text-align: center;
+      text-shadow: 1px 1px 0 #fff;
+    }
+
+    #game {
+      position: relative;
+      width: 90vw;
+      max-width: 420px;
+      height: 70vh;
+      max-height: 650px;
+      min-height: 420px;
+      background: linear-gradient(to bottom, #b8ecff 0%, #eafff2 75%, #8fd17f 75%, #72bf65 100%);
+      border: 5px solid #ffffff;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      touch-action: none;
+    }
+
+    #hud {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 5;
+      font-weight: bold;
+      color: #7a3158;
+      font-size: 18px;
+      text-shadow: 1px 1px 0 #fff;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #powerText {
+      color: #ff7a00;
+    }
+
+    .cloud {
+      position: absolute;
+      background: white;
+      border-radius: 40px;
+      opacity: 0.9;
+    }
+
+    .cloud::before,
+    .cloud::after {
+      content: "";
+      position: absolute;
+      background: white;
+      border-radius: 50%;
+    }
+
+    .cloud1 {
+      width: 80px;
+      height: 30px;
+      top: 40px;
+      left: 35px;
+    }
+
+    .cloud1::before {
+      width: 35px;
+      height: 35px;
+      left: 10px;
+      top: -15px;
+    }
+
+    .cloud1::after {
+      width: 40px;
+      height: 40px;
+      right: 10px;
+      top: -18px;
+    }
+
+    .cloud2 {
+      width: 95px;
+      height: 34px;
+      top: 90px;
+      right: 28px;
+    }
+
+    .cloud2::before {
+      width: 38px;
+      height: 38px;
+      left: 12px;
+      top: -16px;
+    }
+
+    .cloud2::after {
+      width: 42px;
+      height: 42px;
+      right: 12px;
+      top: -18px;
+    }
+
+    #bunny {
+      position: absolute;
+      bottom: 24px;
+      left: 170px;
+      width: 78px;
+      height: 78px;
+      transition: transform 0.05s linear, filter 0.2s ease;
+      z-index: 3;
+    }
+
+    #bunny.powered {
+      filter: drop-shadow(0 0 10px gold) brightness(1.15);
+    }
+
+    .ear {
+      position: absolute;
+      width: 18px;
+      height: 38px;
+      background: #ff8fc3;
+      border: 3px solid #c94f88;
+      border-radius: 12px;
+      top: 0;
+    }
+
+    .ear.left {
+      left: 14px;
+      transform: rotate(-12deg);
+    }
+
+    .ear.right {
+      right: 14px;
+      transform: rotate(12deg);
+    }
+
+    .ear::after {
+      content: "";
+      position: absolute;
+      width: 8px;
+      height: 22px;
+      background: #ffd1e6;
+      border-radius: 8px;
+      left: 50%;
+      top: 7px;
+      transform: translateX(-50%);
+    }
+
+    .head {
+      position: absolute;
+      bottom: 8px;
+      left: 9px;
+      width: 60px;
+      height: 50px;
+      background: #ff8fc3;
+      border: 3px solid #c94f88;
+      border-radius: 50%;
+    }
+
+    .eye {
+      position: absolute;
+      width: 6px;
+      height: 10px;
+      background: #222;
+      border-radius: 50%;
+      top: 18px;
+    }
+
+    .eye.left { left: 16px; }
+    .eye.right { right: 16px; }
+
+    .nose {
+      position: absolute;
+      width: 10px;
+      height: 8px;
+      background: #ff5f8f;
+      border-radius: 50%;
+      left: 50%;
+      top: 24px;
+      transform: translateX(-50%);
+    }
+
+    .mouth {
+      position: absolute;
+      width: 20px;
+      height: 10px;
+      border-bottom: 3px solid #9b3e67;
+      border-radius: 0 0 20px 20px;
+      left: 50%;
+      top: 31px;
+      transform: translateX(-50%);
+    }
+
+    .carrot {
+      position: absolute;
+      width: 26px;
+      height: 44px;
+      z-index: 2;
+    }
+
+    .carrot-top {
+      position: absolute;
+      top: 0;
+      left: 7px;
+      width: 12px;
+      height: 12px;
+      background: #39b54a;
+      border-radius: 3px;
+    }
+
+    .carrot-top::before,
+    .carrot-top::after {
+      content: "";
+      position: absolute;
+      width: 10px;
+      height: 14px;
+      background: #4fd466;
+      border-radius: 10px 10px 0 10px;
+      top: -7px;
+    }
+
+    .carrot-top::before {
+      left: -5px;
+      transform: rotate(-30deg);
+    }
+
+    .carrot-top::after {
+      right: -5px;
+      transform: rotate(30deg);
+    }
+
+    .carrot-body {
+      position: absolute;
+      top: 10px;
+      left: 4px;
+      width: 18px;
+      height: 28px;
+      background: #ff8a2b;
+      clip-path: polygon(50% 100%, 0 0, 100% 0);
+      border-radius: 3px;
+    }
+
+    .rock {
+      position: absolute;
+      width: 34px;
+      height: 26px;
+      background: #7c7c7c;
+      border: 3px solid #5f5f5f;
+      border-radius: 45% 55% 50% 50%;
+      z-index: 2;
+    }
+
+    .rock::before,
+    .rock::after {
+      content: "";
+      position: absolute;
+      background: rgba(255,255,255,0.18);
+      border-radius: 50%;
+    }
+
+    .rock::before {
+      width: 10px;
+      height: 6px;
+      top: 5px;
+      left: 6px;
+    }
+
+    .rock::after {
+      width: 8px;
+      height: 5px;
+      top: 12px;
+      right: 6px;
+    }
+
+    #gameOverScreen {
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0.88);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 10;
+      text-align: center;
+      padding: 20px;
+    }
+
+    #gameOverScreen h2 {
+      color: #ff4fa3;
+      font-size: 34px;
+      margin-bottom: 10px;
+    }
+
+    #finalScore {
+      color: #7a3158;
+      font-size: 22px;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+
+    #restartBtn {
+      font-size: 18px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      background: #ff8fc3;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      cursor: pointer;
+    }
+
+    #hint {
+      margin-top: 10px;
+      color: #444;
+      text-align: center;
+      font-size: 14px;
+      max-width: 420px;
+      line-height: 1.4;
+    }
+
+    #touchControls {
+      margin-top: 10px;
+      display: flex;
+      gap: 12px;
+    }
+
+    .touchBtn {
+      font-size: 16px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 12px;
+      background: #ff8fc3;
+      color: white;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+    }
+  </style>
+</head>
+<body>
+  <h1>Sigma Gamer</h1>
+
+  <div id="game">
+    <div id="hud">
+      <div id="scoreText">Score: 0</div>
+      <div id="livesText">Lives: 3</div>
+      <div id="timeText">Time: 30</div>
+      <div id="powerText">Power: 0/5</div>
+    </div>
+
+    <div class="cloud cloud1"></div>
+    <div class="cloud cloud2"></div>
+
+    <div id="bunny">
+      <div class="ear left"></div>
+      <div class="ear right"></div>
+      <div class="head">
+        <div class="eye left"></div>
+        <div class="eye right"></div>
+        <div class="nose"></div>
+        <div class="mouth"></div>
+      </div>
+    </div>
+
+    <div id="gameOverScreen">
+      <h2>Game Over!</h2>
+      <div id="finalScore">Final Score: 0</div>
+      <button id="restartBtn">Play Again</button>
+    </div>
+  </div>
+
+  <div id="hint">Catch carrots in a row to charge Power Mode. At 5 in a row, your bunny gets a speed boost!</div>
+
+  <div id="touchControls">
+    <button class="touchBtn" id="leftBtn">⬅ Left</button>
+    <button class="touchBtn" id="rightBtn">Right ➡</button>
+  </div>
+
+  <script>
+    const game = document.getElementById("game");
+    const bunny = document.getElementById("bunny");
+    const leftBtn = document.getElementById("leftBtn");
+    const rightBtn = document.getElementById("rightBtn");
+    const scoreText = document.getElementById("scoreText");
+    const livesText = document.getElementById("livesText");
+    const timeText = document.getElementById("timeText");
+    const powerText = document.getElementById("powerText");
+    const gameOverScreen = document.getElementById("gameOverScreen");
+    const finalScore = document.getElementById("finalScore");
+    const restartBtn = document.getElementById("restartBtn");
+
+    let bunnyX = 170;
+    const normalBunnySpeed = 18;
+    const powerBunnySpeed = 30;
+    let currentBunnySpeed = normalBunnySpeed;
+    const fallSpeed = 2;
+    let fallingItems = [];
+    let carrotSpawnTimer = 0;
+    let rockSpawnTimer = 0;
+    let score = 0;
+    let lives = 3;
+    let timeLeft = 30;
+    let gameRunning = true;
+
+    let carrotStreak = 0;
+    let powerMode = false;
+    let powerModeTimeout = null;
+
+    function clampBunny() {
+      const maxX = game.clientWidth - bunny.offsetWidth;
+      if (bunnyX < 0) bunnyX = 0;
+      if (bunnyX > maxX) bunnyX = maxX;
+      bunny.style.left = bunnyX + "px";
+    }
+
+    function moveLeft() {
+      if (!gameRunning) return;
+      bunnyX -= currentBunnySpeed;
+      bunny.style.transform = "scaleX(-1)";
+      clampBunny();
+    }
+
+    function moveRight() {
+      if (!gameRunning) return;
+      bunnyX += currentBunnySpeed;
+      bunny.style.transform = "scaleX(1)";
+      clampBunny();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft") moveLeft();
+      if (e.key === "ArrowRight") moveRight();
+    });
+
+    function holdButton(button, moveFn) {
+      let interval;
+
+      const start = (e) => {
+        e.preventDefault();
+        moveFn();
+        clearInterval(interval);
+        interval = setInterval(moveFn, 80);
+      };
+
+      const stop = () => clearInterval(interval);
+
+      button.addEventListener("mousedown", start);
+      button.addEventListener("touchstart", start, { passive: false });
+      button.addEventListener("mouseup", stop);
+      button.addEventListener("mouseleave", stop);
+      button.addEventListener("touchend", stop);
+      button.addEventListener("touchcancel", stop);
+    }
+
+    holdButton(leftBtn, moveLeft);
+    holdButton(rightBtn, moveRight);
+
+    function updatePowerText() {
+      if (powerMode) {
+        powerText.textContent = "POWER MODE!";
+      } else {
+        powerText.textContent = "Power: " + carrotStreak + "/5";
+      }
+    }
+
+    function startPowerMode() {
+      powerMode = true;
+      currentBunnySpeed = powerBunnySpeed;
+      bunny.classList.add("powered");
+      updatePowerText();
+
+      clearTimeout(powerModeTimeout);
+      powerModeTimeout = setTimeout(() => {
+        powerMode = false;
+        currentBunnySpeed = normalBunnySpeed;
+        bunny.classList.remove("powered");
+        carrotStreak = 0;
+        updatePowerText();
+      }, 5000);
+    }
+
+    function createCarrot() {
+      const carrot = document.createElement("div");
+      carrot.className = "carrot";
+      carrot.innerHTML = `
+        <div class="carrot-top"></div>
+        <div class="carrot-body"></div>
+      `;
+      const x = Math.random() * (game.clientWidth - 26);
+      carrot.style.left = x + "px";
+      carrot.style.top = "-50px";
+      game.appendChild(carrot);
+      fallingItems.push({ el: carrot, x: x, y: -50, w: 26, h: 44, type: "good" });
+    }
+
+    function createRock() {
+      const rock = document.createElement("div");
+      rock.className = "rock";
+      const x = Math.random() * (game.clientWidth - 34);
+      rock.style.left = x + "px";
+      rock.style.top = "-40px";
+      game.appendChild(rock);
+      fallingItems.push({ el: rock, x: x, y: -40, w: 34, h: 26, type: "bad" });
+    }
+
+    function isColliding(a, b) {
+      return !(
+        a.x + a.w < b.x ||
+        a.x > b.x + b.w ||
+        a.y + a.h < b.y ||
+        a.y > b.y + b.h
+      );
+    }
+
+    function endGame() {
+      gameRunning = false;
+      finalScore.textContent = "Final Score: " + score;
+      gameOverScreen.style.display = "flex";
+      clearTimeout(powerModeTimeout);
+    }
+
+    function clearFallingItems() {
+      for (const item of fallingItems) {
+        item.el.remove();
+      }
+      fallingItems = [];
+    }
+
+    function updateItems() {
+      const bunnyBox = {
+        x: bunnyX,
+        y: game.clientHeight - 24 - bunny.offsetHeight,
+        w: bunny.offsetWidth,
+        h: bunny.offsetHeight
+      };
+
+      for (let i = fallingItems.length - 1; i >= 0; i--) {
+        const item = fallingItems[i];
+        item.y += fallSpeed;
+        item.el.style.top = item.y + "px";
+
+        const itemBox = {
+          x: item.x,
+          y: item.y,
+          w: item.w,
+          h: item.h
+        };
+
+        if (isColliding(itemBox, bunnyBox)) {
+          if (item.type === "good") {
+            score++;
+            carrotStreak++;
+            scoreText.textContent = "Score: " + score;
+
+            if (!powerMode && carrotStreak >= 5) {
+              startPowerMode();
+            } else if (!powerMode) {
+              updatePowerText();
+            }
+          } else if (item.type === "bad") {
+            lives--;
+            carrotStreak = 0;
+            if (powerMode) {
+              powerMode = false;
+              currentBunnySpeed = normalBunnySpeed;
+              bunny.classList.remove("powered");
+              clearTimeout(powerModeTimeout);
+            }
+            livesText.textContent = "Lives: " + lives;
+            updatePowerText();
+
+            if (lives <= 0) {
+              item.el.remove();
+              fallingItems.splice(i, 1);
+              endGame();
+              clearFallingItems();
+              return;
+            }
+          }
+
+          item.el.remove();
+          fallingItems.splice(i, 1);
+          continue;
+        }
+
+        if (item.y > game.clientHeight) {
+          item.el.remove();
+          fallingItems.splice(i, 1);
+        }
+      }
+    }
+
+    function gameLoop() {
+      if (gameRunning) {
+        carrotSpawnTimer++;
+        rockSpawnTimer++;
+
+        if (carrotSpawnTimer > 60) {
+          createCarrot();
+          carrotSpawnTimer = 0;
+        }
+
+        if (rockSpawnTimer > 110) {
+          createRock();
+          rockSpawnTimer = 0;
+        }
+
+        updateItems();
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    setInterval(() => {
+      if (!gameRunning) return;
+
+      timeLeft--;
+      timeText.textContent = "Time: " + timeLeft;
+
+      if (timeLeft <= 0) {
+        endGame();
+        clearFallingItems();
+      }
+    }, 1000);
+
+    restartBtn.addEventListener("click", () => {
+      score = 0;
+      lives = 3;
+      timeLeft = 30;
+      bunnyX = 170;
+      carrotSpawnTimer = 0;
+      rockSpawnTimer = 0;
+      gameRunning = true;
+      carrotStreak = 0;
+      powerMode = false;
+      currentBunnySpeed = normalBunnySpeed;
+
+      clearTimeout(powerModeTimeout);
+      bunny.classList.remove("powered");
+
+      scoreText.textContent = "Score: 0";
+      livesText.textContent = "Lives: 3";
+      timeText.textContent = "Time: 30";
+      updatePowerText();
+      gameOverScreen.style.display = "none";
+
+      clearFallingItems();
+      clampBunny();
+    });
+
+    window.addEventListener("resize", clampBunny);
+    clampBunny();
+    updatePowerText();
+    gameLoop();
+  </script>
+</body>
+</html>
